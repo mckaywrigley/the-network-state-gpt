@@ -1,6 +1,6 @@
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { OpenAIModel, TNSChunk } from "@/types";
+import { TNSChunk } from "@/types";
 import { IconArrowRight, IconExternalLink, IconSearch } from "@tabler/icons-react";
 import endent from "endent";
 import Head from "next/head";
@@ -19,7 +19,6 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [mode, setMode] = useState<"search" | "chat">("chat");
   const [matchCount, setMatchCount] = useState<number>(3);
-  const [model, setModel] = useState<OpenAIModel>(OpenAIModel.DAVINCI_TEXT);
   const [apiKey, setApiKey] = useState<string>("");
 
   const handleSearch = async () => {
@@ -72,8 +71,6 @@ export default function Home() {
     Given the following passages from "The Network State" by Balaji Srinivasan, provide an answer to the query: "${query}"
 
     ${results?.map((d: any) => d.content).join("\n\n")}
-
-    Answer:
     `;
 
     const answerResponse = await fetch("/api/answer", {
@@ -81,7 +78,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ prompt, model, apiKey })
+      body: JSON.stringify({ prompt, apiKey })
     });
 
     if (!answerResponse.ok) {
@@ -127,13 +124,7 @@ export default function Home() {
       return;
     }
 
-    if (!model) {
-      alert("Please select a model.");
-      return;
-    }
-
     localStorage.setItem("TNS_KEY", apiKey);
-    localStorage.setItem("TNS_MODEL", model);
     localStorage.setItem("TNS_MATCH_COUNT", matchCount.toString());
     localStorage.setItem("TNS_MODE", mode);
 
@@ -148,16 +139,15 @@ export default function Home() {
     localStorage.removeItem("TNS_MODE");
 
     setApiKey("");
-    setModel(OpenAIModel.DAVINCI_TEXT);
     setMatchCount(3);
     setMode("search");
   };
 
   useEffect(() => {
     if (mode === "search") {
-      setMatchCount(3);
+      setMatchCount(5);
     } else {
-      setMatchCount(1);
+      setMatchCount(3);
     }
   }, [mode]);
 
@@ -169,10 +159,6 @@ export default function Home() {
 
     if (TNS_KEY) {
       setApiKey(TNS_KEY);
-    }
-
-    if (TNS_MODEL) {
-      setModel(TNS_MODEL as OpenAIModel);
     }
 
     if (TNS_MATCH_COUNT) {
@@ -239,25 +225,6 @@ export default function Home() {
                     onChange={(e) => setMatchCount(Number(e.target.value))}
                     className="max-w-[400px] block w-full rounded-md border border-gray-300 p-2 text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
                   />
-                </div>
-
-                <div className="mt-2">
-                  <div>Model</div>
-                  <select
-                    value={model}
-                    onChange={(e) => setModel(e.target.value as OpenAIModel)}
-                    className="max-w-[400px] block w-full cursor-pointer rounded-md border border-gray-300 p-2 text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
-                  >
-                    {Object.values(OpenAIModel).map((model) => (
-                      <option
-                        key={model}
-                        value={model}
-                        className="bg-gray-900 text-white"
-                      >
-                        {model}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 <div className="mt-2">

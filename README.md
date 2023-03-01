@@ -27,7 +27,7 @@ Our database is a Postgres database with the [pgvector](https://github.com/pgvec
 
 Results are ranked by similarity score and returned to the user.
 
-Up to 10 passages are returned (3 by default).
+Up to 10 passages are returned (5 by default).
 
 ### Chat
 
@@ -35,9 +35,7 @@ Chat builds on top of search. It uses search results to create a prompt that is 
 
 This allows for a chat-like experience where the user can ask questions about the book and get answers.
 
-Up to 5 passages can be used to create the prompt (1 by default).
-
-Any of `text-davinci-003`, `text-curie-001`, or `code-davinci-002` can be used as the model (Text Davinci by default).
+Up to 5 passages can be used to create the prompt (3 by default).
 
 ## Dataset
 

@@ -4,21 +4,30 @@ import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser
 
 export const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
-export const OpenAIStream = async (prompt: string, model: OpenAIModel, apiKey: string) => {
+export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  const res = await fetch("https://api.openai.com/v1/completions", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`
     },
     method: "POST",
     body: JSON.stringify({
-      model,
-      prompt,
+      model: OpenAIModel.DAVINCI_TURBO,
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant that accurately answers the user's queries based on the given text."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
       max_tokens: 200,
-      temperature: 0.0,
+      temperature: 0.2,
       stream: true
     })
   });
@@ -40,7 +49,7 @@ export const OpenAIStream = async (prompt: string, model: OpenAIModel, apiKey: s
 
           try {
             const json = JSON.parse(data);
-            const text = json.choices[0].text;
+            const text = json.choices[0].delta.content;
             const queue = encoder.encode(text);
             controller.enqueue(queue);
           } catch (e) {
