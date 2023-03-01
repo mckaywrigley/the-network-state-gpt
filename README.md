@@ -127,4 +127,3 @@ Thanks to [Balaji Srinivasan](https://twitter.com/balajis) for his work on [The 
 ## Contact
 
 If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/mckaywrigley).
-# the-network-state-gpt
