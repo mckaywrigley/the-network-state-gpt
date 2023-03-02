@@ -44,9 +44,9 @@ begin
     tns.section_num,
     tns.section_url,
     tns.chunk_num,
-    tns.text,
-    tns.length,
-    tns.tokens,
+    tns.content,
+    tns.content_length,
+    tns.content_tokens,
     1 - (tns.embedding <=> query_embedding) as similarity
   from tns
   where 1 - (tns.embedding <=> query_embedding) > similarity_threshold
