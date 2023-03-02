@@ -134,7 +134,6 @@ export default function Home() {
 
   const handleClear = () => {
     localStorage.removeItem("TNS_KEY");
-    localStorage.removeItem("TNS_MODEL");
     localStorage.removeItem("TNS_MATCH_COUNT");
     localStorage.removeItem("TNS_MODE");
 
@@ -153,7 +152,6 @@ export default function Home() {
 
   useEffect(() => {
     const TNS_KEY = localStorage.getItem("TNS_KEY");
-    const TNS_MODEL = localStorage.getItem("TNS_MODEL");
     const TNS_MATCH_COUNT = localStorage.getItem("TNS_MATCH_COUNT");
     const TNS_MODE = localStorage.getItem("TNS_MODE");
 
