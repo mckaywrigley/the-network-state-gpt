@@ -40,7 +40,7 @@ export const Footer: FC = () => {
 
         <a
           className="flex items-center hover:opacity-50"
-          href="https://github.com/mckaywrigley/"
+          href="https://github.com/mckaywrigley/the-network-state-gpt"
           target="_blank"
           rel="noreferrer"
         >
