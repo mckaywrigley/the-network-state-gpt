@@ -1,5 +1,7 @@
+--  RUN 1st
 create extension vector;
 
+-- RUN 2nd
 create table tns (
   id bigserial primary key,
   chapter_title text,
@@ -14,6 +16,7 @@ create table tns (
   embedding vector (1536)
 );
 
+-- RUN 3rd after running the scripts
 create or replace function tns_search (
   query_embedding vector(1536),
   similarity_threshold float,
@@ -55,6 +58,7 @@ begin
 end;
 $$;
 
+-- RUN 4th
 create index on tns 
 using ivfflat (embedding vector_cosine_ops)
 with (lists = 100);
