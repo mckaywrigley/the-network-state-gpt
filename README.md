@@ -6,6 +6,14 @@ All code & data used is 100% open-source.
 
 [![The Network State GPT](./public/cover.png)](https://the-network-state-gpt.vercel.app/)
 
+## Dataset
+
+The dataset is a CSV file containing all text & embeddings used.
+
+Download it [here](https://drive.google.com/file/d/1djr6I4-oPNTABaqrmubaL_5tSXetbrdf/view).
+
+I recommend getting familiar with fetching, cleaning, and storing data as outlined in the scraping and embedding scripts below, but feel free to skip those steps and just use the dataset.
+
 ## How It Works
 
 The Network State GPT provides 2 things:
@@ -27,29 +35,15 @@ Our database is a Postgres database with the [pgvector](https://github.com/pgvec
 
 Results are ranked by similarity score and returned to the user.
 
-Up to 10 passages are returned (5 by default).
-
 ### Chat
 
 Chat builds on top of search. It uses search results to create a prompt that is fed into GPT-3.
 
 This allows for a chat-like experience where the user can ask questions about the book and get answers.
 
-Up to 5 passages can be used to create the prompt (3 by default).
-
-## Dataset
-
-The dataset is a CSV file containing all text & embeddings used.
-
-Download it [here](https://drive.google.com/file/d/1djr6I4-oPNTABaqrmubaL_5tSXetbrdf/view).
-
-I recommend getting familiar with fetching, cleaning, and storing data as outlined in the scraping and embedding scripts below, but feel free to skip those steps and just use the dataset.
-
 ## Running Locally
 
-In the near future I'll have a detailed how-to guide for this project.
-
-For now, here's a quick overview of how to run it locally.
+Here's a quick overview of how to run it locally.
 
 ### Requirements
 
@@ -125,3 +119,11 @@ Thanks to [Balaji Srinivasan](https://twitter.com/balajis) for his work on [The 
 ## Contact
 
 If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/mckaywrigley).
+
+## Notes
+
+I sacrificed composability for simplicity in the app.
+
+Yes, you can make things more modular and reusable.
+
+But I kept pretty much everything in the homepage component for the sake of simplicity.
