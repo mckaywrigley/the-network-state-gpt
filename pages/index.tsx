@@ -1,3 +1,4 @@
+import { Answer } from "@/components/Answer/Answer";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { TNSChunk } from "@/types";
@@ -12,13 +13,11 @@ export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [chunks, setChunks] = useState<TNSChunk[]>([]);
   const [answer, setAnswer] = useState<string>("");
-
   const [loading, setLoading] = useState<boolean>(false);
-  const [searchMessage, setSearchMessage] = useState<string>("");
 
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [mode, setMode] = useState<"search" | "chat">("chat");
-  const [matchCount, setMatchCount] = useState<number>(3);
+  const [matchCount, setMatchCount] = useState<number>(5);
   const [apiKey, setApiKey] = useState<string>("");
 
   const handleSearch = async () => {
@@ -36,7 +35,6 @@ export default function Home() {
     setChunks([]);
 
     setLoading(true);
-    setSearchMessage("Embedding query...");
 
     const searchResponse = await fetch("/api/search", {
       method: "POST",
@@ -63,12 +61,40 @@ export default function Home() {
   };
 
   const handleAnswer = async () => {
-    const results = await handleSearch();
+    if (!apiKey) {
+      alert("Please enter an API key.");
+      return;
+    }
 
-    setSearchMessage("Generating answer...");
+    if (!query) {
+      alert("Please enter a query.");
+      return;
+    }
+
+    setAnswer("");
+    setChunks([]);
+
+    setLoading(true);
+
+    const searchResponse = await fetch("/api/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ query, apiKey, matches: matchCount })
+    });
+
+    if (!searchResponse.ok) {
+      setLoading(false);
+      throw new Error(searchResponse.statusText);
+    }
+
+    const results: TNSChunk[] = await searchResponse.json();
+
+    setChunks(results);
 
     const prompt = endent`
-    Given the following passages from "The Network State" by Balaji Srinivasan, provide an answer to the query: "${query}"
+    Use the following passages to provide an answer to the query: "${query}"
 
     ${results?.map((d: any) => d.content).join("\n\n")}
     `;
@@ -124,47 +150,47 @@ export default function Home() {
       return;
     }
 
-    localStorage.setItem("TNS_KEY", apiKey);
-    localStorage.setItem("TNS_MATCH_COUNT", matchCount.toString());
-    localStorage.setItem("TNS_MODE", mode);
+    localStorage.setItem("PG_KEY", apiKey);
+    localStorage.setItem("PG_MATCH_COUNT", matchCount.toString());
+    localStorage.setItem("PG_MODE", mode);
 
     setShowSettings(false);
     inputRef.current?.focus();
   };
 
   const handleClear = () => {
-    localStorage.removeItem("TNS_KEY");
-    localStorage.removeItem("TNS_MATCH_COUNT");
-    localStorage.removeItem("TNS_MODE");
+    localStorage.removeItem("PG_KEY");
+    localStorage.removeItem("PG_MATCH_COUNT");
+    localStorage.removeItem("PG_MODE");
 
     setApiKey("");
-    setMatchCount(3);
+    setMatchCount(5);
     setMode("search");
   };
 
   useEffect(() => {
-    if (mode === "search") {
-      setMatchCount(5);
-    } else {
-      setMatchCount(3);
+    if (matchCount > 10) {
+      setMatchCount(10);
+    } else if (matchCount < 1) {
+      setMatchCount(1);
     }
-  }, [mode]);
+  }, [matchCount]);
 
   useEffect(() => {
-    const TNS_KEY = localStorage.getItem("TNS_KEY");
-    const TNS_MATCH_COUNT = localStorage.getItem("TNS_MATCH_COUNT");
-    const TNS_MODE = localStorage.getItem("TNS_MODE");
+    const PG_KEY = localStorage.getItem("PG_KEY");
+    const PG_MATCH_COUNT = localStorage.getItem("PG_MATCH_COUNT");
+    const PG_MODE = localStorage.getItem("PG_MODE");
 
-    if (TNS_KEY) {
-      setApiKey(TNS_KEY);
+    if (PG_KEY) {
+      setApiKey(PG_KEY);
     }
 
-    if (TNS_MATCH_COUNT) {
-      setMatchCount(parseInt(TNS_MATCH_COUNT));
+    if (PG_MATCH_COUNT) {
+      setMatchCount(parseInt(PG_MATCH_COUNT));
     }
 
-    if (TNS_MODE) {
-      setMode(TNS_MODE as "search" | "chat");
+    if (PG_MODE) {
+      setMode(PG_MODE as "search" | "chat");
     }
 
     inputRef.current?.focus();
@@ -217,8 +243,8 @@ export default function Home() {
                   <div>Passage Count</div>
                   <input
                     type="number"
-                    min="1"
-                    max={mode === "search" ? 10 : 5}
+                    min={1}
+                    max={10}
                     value={matchCount}
                     onChange={(e) => setMatchCount(Number(e.target.value))}
                     className="max-w-[400px] block w-full rounded-md border border-gray-300 p-2 text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
@@ -282,55 +308,91 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <div className="text-center font-bold text-3xl mt-4">Please enter your OpenAI API key in settings.</div>
+              <div className="text-center font-bold text-3xl mt-7">Please enter your OpenAI API key in settings.</div>
             )}
 
             {loading ? (
-              <div className="mt-8 flex items-center justify-center flex-col">
-                <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <div className="mt-8 text-xl">{searchMessage}</div>
+              <div className="mt-6 w-full">
+                {mode === "chat" && (
+                  <>
+                    <div className="font-bold text-2xl">Answer</div>
+                    <div className="animate-pulse mt-2">
+                      <div className="h-4 bg-gray-300 rounded"></div>
+                      <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                      <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                      <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                      <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                    </div>
+                  </>
+                )}
+
+                <div className="font-bold text-2xl mt-6">Passages</div>
+                <div className="animate-pulse mt-2">
+                  <div className="h-4 bg-gray-300 rounded"></div>
+                  <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                  <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                  <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                  <div className="h-4 bg-gray-300 rounded mt-2"></div>
+                </div>
               </div>
-            ) : (
-              <>
-                {chunks.length > 0 ? (
-                  <div className="mt-6">
-                    {answer && (
-                      <>
-                        <div className="font-bold text-2xl">Answer</div>
-                        <div className="mt-2">{answer}</div>
-                      </>
-                    )}
+            ) : answer ? (
+              <div className="mt-6">
+                <div className="font-bold text-2xl mb-2">Answer</div>
+                <Answer text={answer} />
 
-                    <div className={`${mode === "search" ? "mt-2" : "mt-6"} mb-16`}>
-                      <div className="font-bold text-2xl">Passages</div>
+                <div className="mt-6 mb-16">
+                  <div className="font-bold text-2xl">Passages</div>
 
-                      {chunks.map((chunk) => (
-                        <div key={chunk.chunk_num}>
-                          <div className="mt-4 border border-zinc-600 rounded-lg p-4">
-                            <div className="flex justify-between">
-                              <div>
-                                <div className="font-bold text-xl">{chunk.chapter_title}</div>
-                                <div className="mt-1 font-bold">{chunk.section_title}</div>
-                              </div>
-                              <a
-                                className="hover:opacity-50 ml-2"
-                                href={chunk.section_url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                <IconExternalLink />
-                              </a>
-                            </div>
-                            <div className="mt-2">{chunk.content}</div>
+                  {chunks.map((chunk, index) => (
+                    <div key={index}>
+                      <div className="mt-4 border border-zinc-600 rounded-lg p-4">
+                        <div className="flex justify-between">
+                          <div>
+                            <div className="font-bold text-xl">{chunk.chapter_title}</div>
+                            <div className="mt-1 font-bold text-sm">{chunk.section_title}</div>
                           </div>
+                          <a
+                            className="hover:opacity-50 ml-2"
+                            href={chunk.section_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <IconExternalLink />
+                          </a>
                         </div>
-                      ))}
+                        <div className="mt-2">{chunk.content}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : chunks.length > 0 ? (
+              <div className="mt-6 pb-16">
+                <div className="font-bold text-2xl">Passages</div>
+                {chunks.map((chunk, index) => (
+                  <div key={index}>
+                    <div className="mt-4 border border-zinc-600 rounded-lg p-4">
+                      <div className="flex justify-between">
+                        <div>
+                          <div className="font-bold text-xl">{chunk.chapter_title}</div>
+                          <div className="mt-1 font-bold text-sm">{chunk.section_title}</div>
+                        </div>
+                        <a
+                          className="hover:opacity-50 ml-2"
+                          href={chunk.section_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <IconExternalLink />
+                        </a>
+                      </div>
+                      <div className="mt-2">{chunk.content}</div>
                     </div>
                   </div>
-                ) : (
-                  <div className="mt-6 text-center text-lg">{`AI-powered search & chat for Balaji Srinivasan's "The Network State."`}</div>
-                )}
-              </>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 text-center text-lg">{`AI-powered search & chat for Balaji Srinivasan's "The Network State."`}</div>
             )}
           </div>
         </div>
