@@ -12,13 +12,14 @@ export const Answer: React.FC<AnswerProps> = ({ text }) => {
     setWords(text.split(" "));
   }, [text]);
 
+  console.log(words);
   return (
     <div>
       {words.map((word, index) => (
         <span
           key={index}
           className={styles.fadeIn}
-          style={{ animationDelay: `${index * 0.02}s` }}
+          style={{ animationDelay: `${index * 0.001}s` }}
         >
           {word}{" "}
         </span>
