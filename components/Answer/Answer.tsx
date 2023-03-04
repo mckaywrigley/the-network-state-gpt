@@ -12,7 +12,6 @@ export const Answer: React.FC<AnswerProps> = ({ text }) => {
     setWords(text.split(" "));
   }, [text]);
 
-  console.log(words);
   return (
     <div>
       {words.map((word, index) => (
